@@ -62,9 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
                      if (user != null && user.email != null) {
                         try {
                            AuthService().sendPasswordResetEmail(user.email!);
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('A resilient password reset link was sent to ${user.email}')));
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('A setup link has been sent to ${user.email}', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.green));
                         } catch (e) {
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent));
                         }
                      }
                   } else if (value == 'logout') {

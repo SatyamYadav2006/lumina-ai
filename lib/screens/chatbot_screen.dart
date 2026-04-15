@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -54,10 +55,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     bool isHindi = RegExp(r'[\u0900-\u097F]').hasMatch(text);
     String targetLocale = isHindi ? "hi-IN" : "en-IN";
-    
+
     await flutterTts.setLanguage(targetLocale);
-    // Standard rates sound substantially better than modified dragging rates across chromium wrappers
-    await flutterTts.setSpeechRate(1.0);
     await flutterTts.setPitch(1.0);
 
     await flutterTts.speak(text);
