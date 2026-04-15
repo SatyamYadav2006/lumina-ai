@@ -9,6 +9,8 @@ import '../widgets/holographic_card.dart';
 import '../widgets/celestial_background.dart';
 import 'chatbot_screen.dart';
 import 'history_screen.dart';
+import 'about_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,12 +44,77 @@ class _HomeScreenState extends State<HomeScreen> {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: const Text("ASTROLABE", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 4.0, fontSize: 16)),
+            title: const Text("LUMINA AI", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 4.0, fontSize: 16)),
             centerTitle: true,
             actions: [
               IconButton(icon: const Icon(Icons.history), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen()))),
               IconButton(icon: const Icon(Icons.brightness_6), onPressed: () => Provider.of<ThemeProvider>(context, listen: false).toggleTheme()),
-              IconButton(icon: const Icon(Icons.logout), onPressed: () => AuthService().logOut()),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                color: Theme.of(context).colorScheme.surface,
+                onSelected: (value) {
+                  if (value == 'about') {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
+                  } else if (value == 'privacy') {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
+                  } else if (value == 'change_password') {
+                     final user = AuthService().currentUser;
+                     if (user != null && user.email != null) {
+                        try {
+                           AuthService().sendPasswordResetEmail(user.email!);
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('A resilient password reset link was sent to ${user.email}')));
+                        } catch (e) {
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                        }
+                     }
+                  } else if (value == 'logout') {
+                    AuthService().logOut();
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'about',
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary, size: 20),
+                        const SizedBox(width: 12),
+                        const Text('Contact Us'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'privacy',
+                    child: Row(
+                      children: [
+                        Icon(Icons.privacy_tip_outlined, color: Theme.of(context).colorScheme.primary, size: 20),
+                        const SizedBox(width: 12),
+                        const Text('Privacy Policy'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'change_password',
+                    child: Row(
+                      children: [
+                        Icon(Icons.lock_reset, color: Theme.of(context).colorScheme.primary, size: 20),
+                        const SizedBox(width: 12),
+                        const Text('Change Password'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Row(
+                      children: const [
+                        Icon(Icons.logout, color: Colors.redAccent, size: 20),
+                        SizedBox(width: 12),
+                        Text('Logout', style: TextStyle(color: Colors.redAccent)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           body: CelestialBackground(

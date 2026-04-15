@@ -4,11 +4,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/user_model.dart';
 import '../models/horoscope_model.dart';
 
-class GeminiService {
-  String get _apiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
+class DeepSeekService {
+  String get _apiKey => dotenv.env['DEEPSEEK_API_KEY'] ?? '';
 
-  final String _endpoint =
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+  final String _endpoint = "https://api.deepseek.com/chat/completions";
 
   // Generate Daily Horoscope
   Future<HoroscopeModel> generateDailyHoroscope(UserModel user, DateTime date) async {
@@ -46,25 +45,26 @@ Return ONLY valid JSON in this format:
 
     try {
       final response = await http.post(
-        Uri.parse("$_endpoint?key=$_apiKey"),
-        headers: {"Content-Type": "application/json"},
+        Uri.parse(_endpoint),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $_apiKey"
+        },
         body: jsonEncode({
-          "contents": [
-            {
-              "parts": [
-                {"text": prompt}
-              ]
-            }
+          "model": "deepseek-chat",
+          "response_format": {"type": "json_object"},
+          "messages": [
+            {"role": "system", "content": "You are a master astrologer capable of writing deep, mystical, and profoundly insightful daily horoscopes."},
+            {"role": "user", "content": prompt}
           ]
         }),
       );
 
-      final data = jsonDecode(response.body);
-
       if (response.statusCode == 200) {
-        String content = data['candidates'][0]['content']['parts'][0]['text'];
+        final data = jsonDecode(response.body);
+        String content = data['choices'][0]['message']['content'];
 
-        // Clean JSON (Gemini sometimes adds extra text)
+        // Clean JSON in case of markdown formatting
         content = content.replaceAll("```json", "").replaceAll("```", "").trim();
 
         final Map<String, dynamic> output = jsonDecode(content);
@@ -86,50 +86,55 @@ Return ONLY valid JSON in this format:
           donts: List<String>.from(output['donts'] ?? []),
         );
       } else {
-        throw Exception("Gemini error: ${response.body}");
+        throw Exception("DeepSeek error: \${response.statusCode} - \${response.body}");
       }
     } catch (e) {
-      throw Exception("Gemini API Error: $e");
+      throw Exception("DeepSeek API Error: \$e");
     }
   }
 
   // Chatbot
   Future<String> sendChatMessage(
       List<Map<String, String>> messageHistory, UserModel user) async {
-    final prompt = """
-User: ${user.name}
-Zodiac: ${user.zodiacSign}
+    final systemPrompt = """
+You are Lumina, a mystical and friendly AI Oracle chatbot.
+The user you are speaking to is ${user.name}, who is a ${user.zodiacSign}.
+Respond with deep astrological insight, empathy, and cosmic wisdom.
 
-Conversation:
-${messageHistory.map((m) => "${m['role']}: ${m['content']}").join("\n")}
-
-Reply like a friendly astrology chatbot.
+CRITICAL RULES:
+1. You MUST reply in the EXACT SAME language the user speaks to you in. If they type English, reply strictly in English. If they type Hindi, reply strictly in Hindi. This is mandatory.
+2. DO NOT USE ANY emojis, asterisks (*), hashtags, or special symbols. Output plain text only so a text-to-speech engine can read your reply flawlessly.
 """;
+
+    List<Map<String, String>> apiMessages = [
+      {"role": "system", "content": systemPrompt}
+    ];
+
+    for (var msg in messageHistory) {
+      apiMessages.add({"role": msg['role']!, "content": msg['content']!});
+    }
 
     try {
       final response = await http.post(
-        Uri.parse("$_endpoint?key=$_apiKey"),
-        headers: {"Content-Type": "application/json"},
+        Uri.parse(_endpoint),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $_apiKey"
+        },
         body: jsonEncode({
-          "contents": [
-            {
-              "parts": [
-                {"text": prompt}
-              ]
-            }
-          ]
+          "model": "deepseek-chat",
+          "messages": apiMessages
         }),
       );
 
-      final data = jsonDecode(response.body);
-
       if (response.statusCode == 200) {
-        return data['candidates'][0]['content']['parts'][0]['text'];
+         final data = jsonDecode(response.body);
+         return data['choices'][0]['message']['content'];
       } else {
-        throw Exception("Chatbot error: ${response.body}");
+        throw Exception("DeepSeek Chatbot error: \${response.body}");
       }
     } catch (e) {
-      throw Exception("Gemini API Error: $e");
+      throw Exception("DeepSeek API Error: \$e");
     }
   }
 }

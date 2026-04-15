@@ -41,7 +41,7 @@ class AIAstrologyApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          title: 'AI Astrology',
+          title: 'Lumina AI',
           debugShowCheckedModeBanner: false,
           themeMode: themeProvider.themeMode,
           theme: ThemeProvider.lightTheme,

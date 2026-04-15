@@ -25,9 +25,58 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text.trim(),
       );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll("Exception: ", ""), style: const TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent));
     }
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  void _showForgotPasswordDialog() {
+    final TextEditingController resetEmailController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0A0F1A),
+          title: const Text("Reset Password", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: resetEmailController,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: "Enter your registered email",
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel", style: TextStyle(color: Colors.white70)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
+              onPressed: () async {
+                final email = resetEmailController.text.trim();
+                if (email.isNotEmpty) {
+                  try {
+                    await _authService.sendPasswordResetEmail(email);
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password reset link sent! Check your inbox.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), backgroundColor: Colors.green));
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent));
+                    }
+                  }
+                }
+              },
+              child: const Text("Send Link", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      }
+    );
   }
 
   Widget _buildPremiumTextField({
@@ -126,31 +175,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "Authenticate your celestial essence",
+                  "Login to your account",
                   style: TextStyle(color: Theme.of(context).colorScheme.primary, letterSpacing: 2.0, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 60),
                 _buildPremiumTextField(
                   controller: _emailController,
-                  hint: "Ethereal Address (Email)",
+                  hint: "Email Address",
                   icon: Icons.fingerprint,
                 ),
                 const SizedBox(height: 20),
                 _buildPremiumTextField(
                   controller: _passwordController,
-                  hint: "Security Cipher (Password)",
+                  hint: "Password",
                   icon: Icons.lock_outline,
                   isPassword: true,
                 ),
-                const SizedBox(height: 48),
-                _buildPremiumButton(context, "Link Essence", _login, _isLoading),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _showForgotPasswordDialog,
+                    child: const Text("Forgot Password?", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildPremiumButton(context, "LOGIN", _login, _isLoading),
                 const SizedBox(height: 32),
                 TextButton(
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const SignupScreen()));
                   },
-                  child: const Text("First time connecting? Materialize Profile", style: TextStyle(color: Colors.white60, letterSpacing: 1.0, fontSize: 12)),
+                  child: const Text("First time here? Register", style: TextStyle(color: Colors.white60, letterSpacing: 1.0, fontSize: 12)),
                 )
               ],
             ).animate().fade(duration: 1.seconds).slideY(begin: 0.1),

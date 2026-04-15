@@ -25,7 +25,7 @@ class _SignupScreenState extends State<SignupScreen> {
       );
       if (mounted) Navigator.pop(context); // Go back after success
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll("Exception: ", ""), style: const TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent));
     }
     if (mounted) setState(() => _isLoading = false);
   }
@@ -120,31 +120,31 @@ class _SignupScreenState extends State<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  "CONSTELLATION",
+                  "REGISTER",
                   style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 8.0, fontSize: 24, color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "Begin your astral synchronization",
+                  "Create a new account",
                   style: TextStyle(color: Theme.of(context).colorScheme.primary, letterSpacing: 2.0, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 60),
                 _buildPremiumTextField(
                   controller: _emailController,
-                  hint: "Ethereal Address (Email)",
+                  hint: "Email Address",
                   icon: Icons.fingerprint,
                 ),
                 const SizedBox(height: 20),
                 _buildPremiumTextField(
                   controller: _passwordController,
-                  hint: "Security Cipher (Password)",
+                  hint: "Password",
                   icon: Icons.lock_outline,
                   isPassword: true,
                 ),
                 const SizedBox(height: 48),
-                _buildPremiumButton(context, "MATERIALIZE", _signup, _isLoading),
+                _buildPremiumButton(context, "SIGN UP", _signup, _isLoading),
               ],
             ).animate().fade(duration: 800.ms).slideY(begin: 0.1),
           ),

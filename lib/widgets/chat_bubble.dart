@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 class ChatBubble extends StatelessWidget {
   final String text;
   final bool isUser;
+  final bool isPlaying;
+  final VoidCallback? onPlayAudio;
 
   const ChatBubble({
     super.key,
     required this.text,
     required this.isUser,
+    this.isPlaying = false,
+    this.onPlayAudio,
   });
 
   @override
@@ -32,17 +36,32 @@ class ChatBubble extends StatelessWidget {
             bottomLeft: Radius.circular(isUser ? 16 : 0),
             bottomRight: Radius.circular(isUser ? 0 : 16),
           ),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 4,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             )
           ],
         ),
-        child: Text(
-          text,
-          style: TextStyle(color: textColor, fontSize: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              text,
+              style: TextStyle(color: textColor, fontSize: 16),
+            ),
+            if (!isUser && onPlayAudio != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: Icon(isPlaying ? Icons.stop_circle_outlined : Icons.volume_up, color: textColor.withOpacity(0.7), size: 24),
+                  onPressed: onPlayAudio,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              )
+          ],
         ),
       ),
     );

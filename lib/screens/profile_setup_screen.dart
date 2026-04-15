@@ -96,14 +96,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
       await FirestoreService().saveUserProfile(userModel);
       
-      // Refresh AppState
-      if (mounted) Provider.of<AppStateProvider>(context, listen: false).fetchUserData(widget.user.uid);
+      // Refresh AppState securely awaiting completion
+      if (mounted) await Provider.of<AppStateProvider>(context, listen: false).fetchUserData(widget.user.uid);
+      
+      // We intentionally do NOT set _isLoading = false here upon success! 
+      // The button will elegantly spin continuously until the AuthWrapper completely replaces this screen!
       
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error saving profile: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error saving profile: $e', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent));
+        setState(() => _isLoading = false); // Only reset on failure
+      }
     }
-
-    if (mounted) setState(() => _isLoading = false);
   }
 
   Widget _buildPremiumTextField({
@@ -199,7 +203,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         ),
         child: Center(
           child: isLoading
-              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                    const SizedBox(width: 12),
+                    const Text(
+                      "CREATING PROFILE...",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.normal, fontSize: 14, letterSpacing: 2.0),
+                    ).animate(onPlay: (c) => c.repeat(reverse: true)).shimmer(),
+                  ],
+                )
               : Text(
                   text.toUpperCase(),
                   style: const TextStyle(
@@ -219,7 +233,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("CELESTIAL ALIGNMENT", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 4.0, fontSize: 16, color: Colors.white)),
+        title: const Text("Setup Profile", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 4.0, fontSize: 16, color: Colors.white)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -232,33 +246,33 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 16),
-              const Text("Aligning your coordinates...", style: TextStyle(color: Colors.white70, fontSize: 14, letterSpacing: 2.0), textAlign: TextAlign.center),
+              const Text("Please enter your birth details.", style: TextStyle(color: Colors.white70, fontSize: 14, letterSpacing: 2.0), textAlign: TextAlign.center),
               const SizedBox(height: 48),
               _buildPremiumTextField(
                 controller: _nameController,
-                hint: "Full Solar Name",
+                hint: "Full Name",
                 icon: Icons.person_outline,
               ),
               const SizedBox(height: 20),
               _buildPremiumSelectionField(
-                label: _selectedDate == null ? 'No Date Chosen' : 'DOB: ${DateFormat.yMd().format(_selectedDate!)}',
+                label: _selectedDate == null ? 'Select Birth Date' : 'Birth Date: ${DateFormat.yMd().format(_selectedDate!)}',
                 icon: Icons.calendar_month_outlined,
                 onTap: _presentDatePicker,
               ),
               const SizedBox(height: 20),
               _buildPremiumSelectionField(
-                label: _selectedTime == null ? 'No Time Chosen' : 'Time: ${_selectedTime!.format(context)}',
+                label: _selectedTime == null ? 'Select Birth Time' : 'Birth Time: ${_selectedTime!.format(context)}',
                 icon: Icons.access_time,
                 onTap: _presentTimePicker,
               ),
               const SizedBox(height: 20),
               _buildPremiumTextField(
                 controller: _placeController,
-                hint: "Coordinates (City, Country)",
+                hint: "Birth Place (City, Country)",
                 icon: Icons.map_outlined,
               ),
               const SizedBox(height: 60),
-              _buildPremiumButton(context, "INITIALIZE JOURNEY", _saveProfile, _isLoading),
+              _buildPremiumButton(context, "CREATE PROFILE", _saveProfile, _isLoading),
             ],
           ).animate().fade().slideY(begin: 0.1),
         ),

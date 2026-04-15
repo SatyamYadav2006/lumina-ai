@@ -2,8 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import '../providers/app_state_provider.dart';
-import '../services/gemini_service.dart';
+import '../services/deepseek_service.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/celestial_background.dart';
 
@@ -16,10 +17,51 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
-  final GeminiService _geminiService = GeminiService();
+  final DeepSeekService _aiService = DeepSeekService();
   final List<Map<String, String>> _messages = [];
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
+  late FlutterTts flutterTts;
+  String? _playingText;
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts = FlutterTts();
+    
+    flutterTts.setCompletionHandler(() {
+      if (mounted) {
+        setState(() => _playingText = null);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
+  }
+
+  Future<void> _speak(String text) async {
+    if (_playingText == text) {
+      await flutterTts.stop();
+      if (mounted) setState(() => _playingText = null);
+      return;
+    }
+
+    await flutterTts.stop();
+    if (mounted) setState(() => _playingText = text);
+
+    bool isHindi = RegExp(r'[\u0900-\u097F]').hasMatch(text);
+    String targetLocale = isHindi ? "hi-IN" : "en-IN";
+    
+    await flutterTts.setLanguage(targetLocale);
+    // Standard rates sound substantially better than modified dragging rates across chromium wrappers
+    await flutterTts.setSpeechRate(1.0);
+    await flutterTts.setPitch(1.0);
+
+    await flutterTts.speak(text);
+  }
 
   void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
@@ -35,7 +77,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     try {
       final user = Provider.of<AppStateProvider>(context, listen: false).currentUserData;
       if (user != null) {
-        final response = await _geminiService.sendChatMessage(_messages, user);
+        final response = await _aiService.sendChatMessage(_messages, user);
         setState(() {
           _messages.add({"role": "assistant", "content": response});
         });
@@ -67,7 +109,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("ORACLE LINK", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 4.0, fontSize: 16)),
+        title: const Text("Lumina Chat", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 4.0, fontSize: 16)),
         centerTitle: true,
         backgroundColor: isDark ? Colors.black.withOpacity(0.7) : Colors.white.withOpacity(0.7),
         elevation: 0,
@@ -85,6 +127,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   return ChatBubble(
                     text: msg["content"]!,
                     isUser: msg["role"] == "user",
+                    isPlaying: _playingText == msg["content"],
+                    onPlayAudio: msg["role"] == "user" ? null : () => _speak(msg["content"]!),
                   ).animate().fade().slideY(begin: 0.1);
                 },
               ),
@@ -108,7 +152,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       child: TextField(
                         controller: _messageController,
                         decoration: InputDecoration(
-                          hintText: "Seek guidance...",
+                          hintText: "Ask Lumina anything...",
                           filled: true,
                           fillColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
                           border: OutlineInputBorder(

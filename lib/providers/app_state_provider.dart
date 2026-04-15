@@ -4,12 +4,12 @@ import '../models/user_model.dart';
 import '../models/horoscope_model.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
-import '../services/gemini_service.dart';
+import '../services/deepseek_service.dart';
 
 class AppStateProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final FirestoreService _firestoreService = FirestoreService();
-  final GeminiService _geminiService = GeminiService();
+  final DeepSeekService _aiService = DeepSeekService();
 
   UserModel? _currentUserData;
   HoroscopeModel? _todayHoroscope;
@@ -109,7 +109,7 @@ class AppStateProvider with ChangeNotifier {
 
       // 🔥 If not exists → generate
       if (_todayHoroscope == null) {
-        _todayHoroscope = await _geminiService
+        _todayHoroscope = await _aiService
             .generateDailyHoroscope(_currentUserData!, now);
 
         // Save to Firestore
