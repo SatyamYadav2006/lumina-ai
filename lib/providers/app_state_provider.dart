@@ -4,12 +4,12 @@ import '../models/user_model.dart';
 import '../models/horoscope_model.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
-import '../services/deepseek_service.dart';
+import '../services/gemini_service.dart';
 
 class AppStateProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final FirestoreService _firestoreService = FirestoreService();
-  final DeepSeekService _aiService = DeepSeekService();
+  final GeminiService _aiService = GeminiService();
 
   UserModel? _currentUserData;
   HoroscopeModel? _todayHoroscope;

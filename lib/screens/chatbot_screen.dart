@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../providers/app_state_provider.dart';
-import '../services/deepseek_service.dart';
+import '../services/gemini_service.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/celestial_background.dart';
 
@@ -18,7 +18,7 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
-  final DeepSeekService _aiService = DeepSeekService();
+  final GeminiService _aiService = GeminiService();
   final List<Map<String, String>> _messages = [];
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
@@ -104,15 +104,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       final user = Provider.of<AppStateProvider>(context, listen: false).currentUserData;
       if (user != null) {
         final response = await _aiService.sendChatMessage(_messages, user);
-        setState(() {
-          _messages.add({"role": "assistant", "content": response});
-        });
-        _scrollToBottom();
+        if (mounted) {
+          setState(() {
+            _messages.add({"role": "assistant", "content": response});
+          });
+          _scrollToBottom();
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Chat error: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lumina: ${e.toString().replaceAll("Exception: ", "")}', style: const TextStyle(color: Colors.white)), duration: const Duration(seconds: 5), backgroundColor: Colors.redAccent));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

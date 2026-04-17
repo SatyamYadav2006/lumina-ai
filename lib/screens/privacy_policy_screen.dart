@@ -44,6 +44,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   }
 
   Widget _buildSection(BuildContext context, String title, String content) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -51,7 +52,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         children: [
           Text(title.toUpperCase(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Theme.of(context).colorScheme.primary)),
           const SizedBox(height: 8),
-          Text(content, style: const TextStyle(fontSize: 14, height: 1.6, color: Colors.white70)),
+          Text(content, style: TextStyle(fontSize: 14, height: 1.6, color: isDark ? Colors.white70 : Colors.black87)),
         ],
       ),
     );

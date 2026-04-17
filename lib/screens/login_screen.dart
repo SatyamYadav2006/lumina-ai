@@ -164,8 +164,17 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
-                  child: ClipOval(
-                    child: Image.asset('assets/app-icon.png', height: 90, width: 90, fit: BoxFit.cover),
+                  child: Container(
+                    height: 90,
+                    width: 90,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipOval(
+                      child: Image.asset('assets/app-icon.png', fit: BoxFit.contain),
+                    ),
                   ),
                 ).animate(onPlay: (c) => c.repeat(reverse: true))
                   .scaleXY(begin: 0.95, end: 1.05, duration: 4.seconds)

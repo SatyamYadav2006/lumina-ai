@@ -59,12 +59,12 @@ class AboutScreen extends StatelessWidget {
                   children: [
                     const Text("DEVELOPER ARCHIVE", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 2.0)),
                     const SizedBox(height: 16),
-                    _buildRow("Name", "Satyam Yadav"),
-                    _buildRow("University", "GLA University, Mathura"),
-                    _buildRow("University Roll", "2342010578"),
-                    _buildRow("Class Roll", "46"),
-                    _buildRow("Section", "A"),
-                    _buildRow("Dept / Year", "BCA - 3rd Year"),
+                    _buildRow(context, "Name", "Satyam Yadav"),
+                    _buildRow(context, "University", "GLA University, Mathura"),
+                    _buildRow(context, "University Roll", "2342010578"),
+                    _buildRow(context, "Class Roll", "46"),
+                    _buildRow(context, "Section", "A"),
+                    _buildRow(context, "Dept / Year", "BCA - 3rd Year"),
                     const SizedBox(height: 12),
                     ListTile(
                       leading: Icon(Icons.code, color: Theme.of(context).colorScheme.tertiary),
@@ -83,14 +83,15 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, String value) {
+  Widget _buildRow(BuildContext context, String label, String value) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white70)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontWeight: FontWeight.w800, color: isDark ? Colors.white70 : Colors.black54)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
         ],
       ),
     );

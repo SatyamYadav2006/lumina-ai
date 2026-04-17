@@ -120,8 +120,17 @@ class _SignupScreenState extends State<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
-                  child: ClipOval(
-                    child: Image.asset('assets/app-icon.png', height: 75, width: 75, fit: BoxFit.cover),
+                  child: Container(
+                    height: 75,
+                    width: 75,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.all(6.0),
+                    child: ClipOval(
+                      child: Image.asset('assets/app-icon.png', fit: BoxFit.contain),
+                    ),
                   ),
                 ).animate(onPlay: (c) => c.repeat(reverse: true))
                   .scaleXY(begin: 0.95, end: 1.05, duration: 4.seconds)
